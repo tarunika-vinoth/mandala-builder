@@ -1,0 +1,197 @@
+body{
+    margin:0;
+    min-height:100vh;
+    background:#070707;
+    color:white;
+    font-family:Arial, sans-serif;
+}
+
+.app-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 24px;
+    border-bottom:1px solid #242424;
+    background:#101010;
+}
+
+.app-header h1{
+    margin:0;
+    font-size:26px;
+    font-weight:700;
+}
+
+.app-header p{
+    margin:4px 0 0;
+    color:#b8b8b8;
+    font-size:14px;
+}
+
+.container{
+    display:flex;
+    min-height:calc(100vh - 82px);
+}
+
+.sidebar,
+.tools-panel{
+    width:220px;
+    padding:20px;
+    background:#111;
+}
+
+.sidebar{
+    border-right:1px solid #222;
+}
+
+.tools-panel{
+    border-left:1px solid #222;
+}
+
+.sidebar h2,
+.tools-panel h2{
+    margin:0 0 16px;
+    font-size:18px;
+}
+
+.style-controls{
+    display:grid;
+    gap:8px;
+    margin-bottom:18px;
+}
+
+.style-controls label{
+    font-size:14px;
+}
+
+.style-controls input[type="color"]{
+    width:100%;
+    height:38px;
+    padding:2px;
+    border:1px solid #444;
+    background:#222;
+}
+
+.checkbox-control{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.checkbox-control input{
+    width:auto;
+}
+
+.motif-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:8px;
+    margin-bottom:16px;
+}
+
+.motif-button{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    min-height:76px;
+    margin:0;
+    padding:8px 4px;
+    border-radius:7px;
+}
+
+.motif-button svg{
+    width:36px;
+    height:36px;
+    border:0;
+    box-shadow:none;
+    background:transparent;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:3;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+}
+
+.motif-button span{
+    margin-top:5px;
+    font-size:11px;
+    line-height:1;
+}
+
+.special-actions{
+    padding-top:14px;
+    border-top:1px solid #282828;
+}
+
+button{
+    width:100%;
+    margin-bottom:10px;
+    padding:10px;
+    border:1px solid #333;
+    border-radius:6px;
+    background:#1b1b1b;
+    color:white;
+    cursor:pointer;
+}
+
+button:hover{
+    border-color:#777;
+    background:#242424;
+}
+
+.icon-tools{
+    display:grid;
+    grid-template-columns:repeat(3, 48px);
+    gap:12px;
+}
+
+.icon-button{
+    width:48px;
+    height:48px;
+    margin:0;
+    padding:0;
+    border-radius:50%;
+    border:1px solid #555;
+    background:#1d1d1d;
+    color:white;
+    font-size:24px;
+    line-height:1;
+    cursor:pointer;
+}
+
+.icon-button:hover,
+body.eraser-mode button[onclick="eraseLast()"],
+body.invert-element-mode button[onclick="toggleInvertElement()"]{
+    border-color:white;
+    outline:2px solid white;
+}
+
+.canvas-container{
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:24px;
+    background:radial-gradient(circle at center, #171717 0%, #050505 72%);
+}
+
+#mandala{
+    width:min(800px, 100%);
+    height:auto;
+    background:#000;
+    border:1px solid #333;
+    box-shadow:0 20px 70px rgba(0,0,0,0.55);
+}
+
+body.eraser-mode svg{
+    cursor:crosshair;
+}
+
+body.invert-element-mode svg{
+    cursor:cell;
+}
+
+body.eraser-mode svg [data-action],
+body.invert-element-mode svg [data-action]{
+    cursor:pointer;
+}

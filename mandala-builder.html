@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mandala Builder</title>
+    <style>
+body{
+    margin:0;
+    min-height:100vh;
+    background:#070707;
+    color:white;
+    font-family:Arial, sans-serif;
+}
+
+.app-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 24px;
+    border-bottom:1px solid #242424;
+    background:#101010;
+}
+
+.app-header h1{
+    margin:0;
+    font-size:26px;
+    font-weight:700;
+}
+
+.app-header p{
+    margin:4px 0 0;
+    color:#b8b8b8;
+    font-size:14px;
+}
+
+.container{
+    display:flex;
+    min-height:calc(100vh - 82px);
+}
+
+.sidebar,
+.tools-panel{
+    width:220px;
+    padding:20px;
+    background:#111;
+}
+
+.sidebar{
+    border-right:1px solid #222;
+}
+
+.tools-panel{
+    border-left:1px solid #222;
+}
+
+.sidebar h2,
+.tools-panel h2{
+    margin:0 0 16px;
+    font-size:18px;
+}
+
+.style-controls{
+    display:grid;
+    gap:8px;
+    margin-bottom:18px;
+}
+
+.style-controls label{
+    font-size:14px;
+}
+
+.style-controls input[type="color"]{
+    width:100%;
+    height:38px;
+    padding:2px;
+    border:1px solid #444;
+    background:#222;
+}
+
+.checkbox-control{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.checkbox-control input{
+    width:auto;
+}
+
+.motif-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:8px;
+    margin-bottom:16px;
+}
+
+.motif-button{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    min-height:76px;
+    margin:0;
+    padding:8px 4px;
+    border-radius:7px;
+}
+
+.motif-button svg{
+    width:36px;
+    height:36px;
+    border:0;
+    box-shadow:none;
+    background:transparent;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:3;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+}
+
+.motif-button span{
+    margin-top:5px;
+    font-size:11px;
+    line-height:1;
+}
+
+.special-actions{
+    padding-top:14px;
+    border-top:1px solid #282828;
+}
+
+button{
+    width:100%;
+    margin-bottom:10px;
+    padding:10px;
+    border:1px solid #333;
+    border-radius:6px;
+    background:#1b1b1b;
+    color:white;
+    cursor:pointer;
+}
+
+button:hover{
+    border-color:#777;
+    background:#242424;
+}
+
+.icon-tools{
+    display:grid;
+    grid-template-columns:repeat(3, 48px);
+    gap:12px;
+}
+
+.icon-button{
+    width:48px;
+    height:48px;
+    margin:0;
+    padding:0;
+    border-radius:50%;
+    border:1px solid #555;
+    background:#1d1d1d;
+    color:white;
+    font-size:24px;
+    line-height:1;
+    cursor:pointer;
+}
+
+.icon-button:hover,
+body.eraser-mode button[onclick="eraseLast()"],
+body.invert-element-mode button[onclick="toggleInvertElement()"]{
+    border-color:white;
+    outline:2px solid white;
+}
+
+.canvas-container{
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:24px;
+    background:radial-gradient(circle at center, #171717 0%, #050505 72%);
+}
+
+#mandala{
+    width:min(800px, 100%);
+    height:auto;
+    background:#000;
+    border:1px solid #333;
+    box-shadow:0 20px 70px rgba(0,0,0,0.55);
+}
+
+body.eraser-mode svg{
+    cursor:crosshair;
+}
+
+body.invert-element-mode svg{
+    cursor:cell;
+}
+
+body.eraser-mode svg [data-action],
+body.invert-element-mode svg [data-action]{
+    cursor:pointer;
+}
+
+    </style>
+</head>
+
+<body>
+
+<header class="app-header">
+    <div>
+        <h1>Mandala Builder</h1>
+        <p>Create layered geometric mandalas with editable rings, color, glow, and export.</p>
+    </div>
+</header>
+
+<div class="container">
+
+    <div class="sidebar">
+
+        <h2>Patterns</h2>
+
+        <div class="style-controls">
+            <label for="colorPicker">Color</label>
+            <input id="colorPicker" type="color" value="#00ffff">
+
+            <label for="backgroundPicker">Canvas color</label>
+            <input id="backgroundPicker" type="color" value="#000000">
+
+            <label class="checkbox-control">
+                <input id="fillToggle" type="checkbox">
+                Fill shapes
+            </label>
+
+            <label class="checkbox-control">
+                <input id="glowToggle" type="checkbox">
+                Glow
+            </label>
+        </div>
+
+        <div class="motif-grid">
+            <button class="motif-button" onclick="addRing('circle')" title="Circle"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="12"/></svg><span>Circle</span></button>
+            <button class="motif-button" onclick="addRing('triangle')" title="Triangle"><svg viewBox="0 0 48 48"><path d="M24 10 L38 36 L10 36 Z"/></svg><span>Triangle</span></button>
+            <button class="motif-button" onclick="addRing('diamond')" title="Diamond"><svg viewBox="0 0 48 48"><path d="M24 8 L38 24 L24 40 L10 24 Z"/></svg><span>Diamond</span></button>
+            <button class="motif-button" onclick="addRing('dot')" title="Dot"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="5"/></svg><span>Dot</span></button>
+            <button class="motif-button" onclick="addRing('leaf')" title="Leaf"><svg viewBox="0 0 48 48"><ellipse cx="24" cy="24" rx="8" ry="17"/></svg><span>Leaf</span></button>
+            <button class="motif-button" onclick="addRing('long-petal')" title="Long Drop"><svg viewBox="0 0 48 48"><path d="M5 24 C15 10 33 10 43 24 C33 38 15 38 5 24 Z"/></svg><span>Long</span></button>
+            <button class="motif-button" onclick="addRing('pointed-petal')" title="Pointed Petal"><svg viewBox="0 0 48 48"><path d="M24 7 C39 20 35 37 24 41 C13 37 9 20 24 7 Z"/></svg><span>Pointed</span></button>
+            <button class="motif-button" onclick="addRing('teardrop')" title="Drop Petal"><svg viewBox="0 0 48 48"><path d="M24 6 C38 20 35 40 24 40 C13 40 10 20 24 6 Z"/></svg><span>Drop</span></button>
+            <button class="motif-button" onclick="addRing('star')" title="Star"><svg viewBox="0 0 48 48"><path d="M24 7 L28 19 L41 19 L30 27 L34 40 L24 32 L14 40 L18 27 L7 19 L20 19 Z"/></svg><span>Star</span></button>
+            <button class="motif-button" onclick="addRing('line-sprout')" title="Lines"><svg viewBox="0 0 48 48"><path d="M12 38 V18 M24 38 V10 M36 38 V20"/><circle cx="12" cy="18" r="2"/><circle cx="24" cy="10" r="2"/><circle cx="36" cy="20" r="2"/></svg><span>Lines</span></button>
+            <button class="motif-button" onclick="addRing('dot-line')" title="Dot Line"><svg viewBox="0 0 48 48"><path d="M8 24 H40"/><circle cx="14" cy="24" r="3"/><circle cx="24" cy="24" r="3"/><circle cx="34" cy="24" r="3"/></svg><span>Dotline</span></button>
+            <button class="motif-button" onclick="addRing('arch')" title="Arch"><svg viewBox="0 0 48 48"><path d="M9 34 Q24 8 39 34"/></svg><span>Arch</span></button>
+            <button class="motif-button" onclick="addRing('small-arch')" title="Scallop"><svg viewBox="0 0 48 48"><path d="M4 35 C6 17 18 17 20 35 C22 16 34 16 36 35 C38 18 44 18 46 35"/></svg><span>Scallop</span></button>
+            <button class="motif-button" onclick="addRing('spike')" title="Spike"><svg viewBox="0 0 48 48"><path d="M12 36 L24 8 L36 36"/></svg><span>Spike</span></button>
+            <button class="motif-button" onclick="addRing('wave')" title="Wave"><svg viewBox="0 0 48 48"><path d="M4 28 C11 15 18 15 24 28 C30 41 39 41 46 28"/></svg><span>Wave</span></button>
+            <button class="motif-button" onclick="addRing('arc-band')" title="Arc Band"><svg viewBox="0 0 48 48"><path d="M8 36 Q24 8 40 36 M14 36 Q24 18 34 36"/></svg><span>Arc</span></button>
+            <button class="motif-button" onclick="addRing('swirl')" title="Swirl"><svg viewBox="0 0 48 48"><path d="M14 26 C14 12 36 12 36 25 C36 36 20 35 20 25 C20 18 30 18 30 24"/></svg><span>Swirl</span></button>
+            <button class="motif-button" onclick="addRing('spiral')" title="Spiral"><svg viewBox="0 0 48 48"><path d="M6 29 C13 7 42 8 43 26 C44 42 18 42 18 27 C18 17 32 17 32 26"/></svg><span>Spiral</span></button>
+            <button class="motif-button" onclick="addRing('cluster')" title="Cluster"><svg viewBox="0 0 48 48"><circle cx="18" cy="29" r="7"/><circle cx="30" cy="29" r="7"/><circle cx="24" cy="17" r="7"/></svg><span>Cluster</span></button>
+            <button class="motif-button" onclick="addRing('bead-link')" title="Bead Link"><svg viewBox="0 0 48 48"><path d="M14 24 H34"/><circle cx="12" cy="24" r="6"/><circle cx="36" cy="24" r="6"/></svg><span>Beads</span></button>
+            <button class="motif-button" onclick="addRing('chevron')" title="Chevron"><svg viewBox="0 0 48 48"><path d="M10 18 L24 32 L38 18"/></svg><span>Chevron</span></button>
+            <button class="motif-button" onclick="addRing('hatch-triangle')" title="Hatched Triangle"><svg viewBox="0 0 48 48"><path d="M24 9 L40 38 L8 38 Z M18 38 L31 21 M27 38 L36 30"/></svg><span>Hatch</span></button>
+            <button class="motif-button" onclick="addRing('stripe-block')" title="Stripe Block"><svg viewBox="0 0 48 48"><rect x="10" y="12" width="28" height="24"/><path d="M18 12 V36 M26 12 V36 M34 12 V36"/></svg><span>Stripe</span></button>
+            <button class="motif-button" onclick="addRing('crescent')" title="Crescent"><svg viewBox="0 0 48 48"><path d="M31 9 C17 13 14 34 30 39 C17 39 8 31 8 24 C8 15 17 8 31 9 Z"/></svg><span>Crescent</span></button>
+            <button class="motif-button" onclick="addRing('eye')" title="Eye"><svg viewBox="0 0 48 48"><path d="M8 24 Q24 9 40 24 Q24 39 8 24 Z"/><circle cx="24" cy="24" r="4"/></svg><span>Eye</span></button>
+            <button class="motif-button" onclick="addRing('ring-dot')" title="Ring Dot"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="13"/><circle cx="24" cy="24" r="4"/></svg><span>Ring</span></button>
+            <button class="motif-button" onclick="addRing('sunburst')" title="Sunburst"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="5"/><path d="M24 6 V14 M24 34 V42 M6 24 H14 M34 24 H42 M11 11 L17 17 M31 31 L37 37 M37 11 L31 17 M17 31 L11 37"/></svg><span>Sun</span></button>
+        </div>
+
+        <div class="special-actions">
+            <button onclick="addCenterDot()">Center Dot</button>
+            <button onclick="addBoundary()">Single Boundary</button>
+            <button onclick="addDoubleBoundary()">Double Boundary</button>
+        </div>
+
+    </div>
+
+    <div class="canvas-container">
+
+        <svg
+            id="mandala"
+            width="800"
+            height="800"
+            viewBox="0 0 800 800">
+        </svg>
+
+    </div>
+
+    <div class="tools-panel">
+
+        <h2>Edit</h2>
+
+        <div class="icon-tools">
+            <button class="icon-button" onclick="eraseLast()" aria-label="Manual eraser" title="Manual eraser">
+                &#9003;
+            </button>
+
+            <button class="icon-button" onclick="toggleReverse()" aria-label="Undo" title="Undo">
+                &#8630;
+            </button>
+
+            <button class="icon-button" onclick="toggleInverse()" aria-label="Redo" title="Redo">
+                &#8631;
+            </button>
+
+            <button class="icon-button" onclick="toggleInvertElement()" aria-label="Invert element" title="Invert element">
+                &#9680;
+            </button>
+
+            <button class="icon-button" onclick="downloadArtwork()" aria-label="Download JPG" title="Download JPG">
+                &#8681;
+            </button>
+
+            <button class="icon-button" onclick="resetCanvas()" aria-label="Reset canvas" title="Reset canvas">
+                &#8634;
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+const svg = document.getElementById("mandala");
+const colorPicker = document.getElementById("colorPicker");
+const backgroundPicker = document.getElementById("backgroundPicker");
+const fillToggle = document.getElementById("fillToggle");
+const glowToggle = document.getElementById("glowToggle");
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+const CENTER_X = 400;
+const CENTER_Y = 400;
+const DEFAULT_MOTIF_SPACING = 32;
+const MIN_MOTIFS_PER_RING = 18;
+const MAX_MOTIFS_PER_RING = 96;
+const MOTIF_SPACING = {
+    "long-petal": 52,
+    "line-sprout": 42,
+    "dot-line": 40,
+    "small-arch": 46,
+    "wave": 48,
+    "arc-band": 48,
+    "swirl": 38,
+    "spiral": 46,
+    "cluster": 42,
+    "bead-link": 48,
+    "chevron": 38,
+    "hatch-triangle": 42,
+    "stripe-block": 40,
+    "eye": 44,
+    "sunburst": 42,
+    "star": 34,
+    "teardrop": 34,
+    "pointed-petal": 36,
+    "leaf": 32,
+    "triangle": 34,
+    "diamond": 34,
+    "circle": 30,
+    "ring-dot": 34,
+    "crescent": 38
+};
+
+let currentRadius = 50;
+let eraserMode = false;
+let invertElementMode = false;
+const actionHistory = [];
+const removedActions = [];
+
+const defs = createSvgElement("defs", {});
+const glowFilter = createSvgElement("filter", {
+    id: "glow",
+    x: "-50%",
+    y: "-50%",
+    width: "200%",
+    height: "200%"
+});
+const blur = createSvgElement("feGaussianBlur", {
+    stdDeviation: 4,
+    result: "coloredBlur"
+});
+const merge = createSvgElement("feMerge", {});
+const glowMerge = createSvgElement("feMergeNode", {
+    in: "coloredBlur"
+});
+const shapeMerge = createSvgElement("feMergeNode", {
+    in: "SourceGraphic"
+});
+
+merge.appendChild(glowMerge);
+merge.appendChild(shapeMerge);
+glowFilter.appendChild(blur);
+glowFilter.appendChild(merge);
+defs.appendChild(glowFilter);
+svg.appendChild(defs);
+
+const backgroundRect = createSvgElement("rect", {
+    x: 0,
+    y: 0,
+    width: 800,
+    height: 800,
+    fill: backgroundPicker.value
+});
+
+svg.appendChild(backgroundRect);
+backgroundPicker.addEventListener("input", () => {
+    backgroundRect.setAttribute("fill", backgroundPicker.value);
+});
+
+function createSvgElement(tag, attributes) {
+    const element = document.createElementNS(SVG_NS, tag);
+
+    Object.entries(attributes).forEach(([name, value]) => {
+        element.setAttribute(name, value);
+    });
+
+    return element;
+}
+
+function polygonPoints(points) {
+    return points.map(([x, y]) => `${x},${y}`).join(" ");
+}
+
+function starPoints(cx, cy, outerRadius, innerRadius, points = 5) {
+    const coords = [];
+
+    for (let i = 0; i < points * 2; i++) {
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const angle = -Math.PI / 2 + (i * Math.PI) / points;
+
+        coords.push([
+            cx + radius * Math.cos(angle),
+            cy + radius * Math.sin(angle)
+        ]);
+    }
+
+    return polygonPoints(coords);
+}
+
+function getCurrentStyle(canFill = true) {
+    const color = colorPicker.value;
+    const shouldFill = canFill && fillToggle.checked;
+    const style = {
+        fill: shouldFill ? color : "none",
+        stroke: color,
+        "stroke-width": 2
+    };
+
+    if (glowToggle.checked) {
+        style.filter = "url(#glow)";
+    }
+
+    return style;
+}
+
+function styleAttributes(extraAttributes = {}, canFill = true) {
+    return {
+        ...getCurrentStyle(canFill),
+        ...extraAttributes
+    };
+}
+
+function recordAction(action) {
+    actionHistory.push(action);
+    removedActions.length = 0;
+}
+
+function updateEraserMode() {
+    document.body.classList.toggle("eraser-mode", eraserMode);
+}
+
+function updateInvertElementMode() {
+    document.body.classList.toggle("invert-element-mode", invertElementMode);
+}
+
+function removeActionAt(index) {
+    const action = actionHistory.splice(index, 1)[0];
+
+    if (!action) {
+        return;
+    }
+
+    action.removedFromEnd = index === actionHistory.length;
+    action.element.remove();
+    removedActions.push(action);
+
+    if (action.removedFromEnd) {
+        currentRadius = action.previousRadius;
+    }
+}
+
+function removeLastOfType(type) {
+    const index = actionHistory.map(action => action.type).lastIndexOf(type);
+
+    if (index === -1) {
+        return;
+    }
+
+    removeActionAt(index);
+}
+
+function findActionIndexByElement(element) {
+    return actionHistory.findIndex(action => action.element === element);
+}
+
+function getActionGroup(element) {
+    let currentElement = element;
+
+    while (currentElement && currentElement !== svg) {
+        if (currentElement.getAttribute("data-action")) {
+            return currentElement;
+        }
+
+        currentElement = currentElement.parentNode;
+    }
+
+    return null;
+}
+
+function invertHexColor(color) {
+    const trimmedColor = color.trim();
+
+    if (!trimmedColor.startsWith("#")) {
+        return trimmedColor;
+    }
+
+    const hex = trimmedColor.slice(1);
+    const fullHex = hex.length === 3
+        ? hex.split("").map(character => character + character).join("")
+        : hex;
+
+    if (fullHex.length !== 6) {
+        return trimmedColor;
+    }
+
+    const inverted = (0xFFFFFF ^ parseInt(fullHex, 16))
+        .toString(16)
+        .padStart(6, "0");
+
+    return `#${inverted}`;
+}
+
+function invertElementColors(actionGroup) {
+    const elements = [actionGroup, ...actionGroup.querySelectorAll("*")];
+
+    elements.forEach(element => {
+        ["fill", "stroke"].forEach(attribute => {
+            const color = element.getAttribute(attribute);
+
+            if (color && color !== "none") {
+                element.setAttribute(attribute, invertHexColor(color));
+            }
+        });
+    });
+}
+
+function motifGroup(children) {
+    const group = createSvgElement("g", {});
+
+    children.forEach(child => group.appendChild(child));
+
+    return group;
+}
+
+function tangentRotation(angle, x, y) {
+    return `rotate(${angle + 90} ${x} ${y})`;
+}
+
+function getMotifCount(radius, type) {
+    const circumference = 2 * Math.PI * radius;
+    const spacing = MOTIF_SPACING[type] || DEFAULT_MOTIF_SPACING;
+    const count = Math.floor(circumference / spacing);
+
+    return Math.max(MIN_MOTIFS_PER_RING, Math.min(MAX_MOTIFS_PER_RING, count));
+}
+
+function drawMotif(type, x, y, angle) {
+    let motif;
+
+    if (type === "circle") {
+        motif = createSvgElement("circle", styleAttributes({
+            cx: x,
+            cy: y,
+            r: 10
+        }));
+    }
+
+    if (type === "triangle") {
+        motif = createSvgElement("polygon", styleAttributes({
+            points: polygonPoints([
+                [x, y - 16],
+                [x - 12, y + 12],
+                [x + 12, y + 12]
+            ]),
+            transform: `rotate(${angle + 90} ${x} ${y})`
+        }));
+    }
+
+    if (type === "long-petal") {
+        motif = createSvgElement("path", styleAttributes({
+            d: [
+                `M ${x - 23} ${y}`,
+                `C ${x - 10} ${y - 13}, ${x + 10} ${y - 13}, ${x + 23} ${y}`,
+                `C ${x + 10} ${y + 13}, ${x - 10} ${y + 13}, ${x - 23} ${y}`,
+                "Z"
+            ].join(" "),
+            transform: tangentRotation(angle, x, y)
+        }));
+    }
+
+    if (type === "leaf") {
+        motif = createSvgElement("ellipse", styleAttributes({
+            cx: x,
+            cy: y,
+            rx: 8,
+            ry: 18,
+            transform: `rotate(${angle} ${x} ${y})`
+        }));
+    }
+
+    if (type === "diamond") {
+        motif = createSvgElement("polygon", styleAttributes({
+            points: polygonPoints([
+                [x, y - 18],
+                [x + 10, y],
+                [x, y + 18],
+                [x - 10, y]
+            ]),
+            transform: `rotate(${angle} ${x} ${y})`
+        }));
+    }
+
+    if (type === "pointed-petal") {
+        motif = createSvgElement("path", styleAttributes({
+            d: [
+                `M ${x} ${y - 24}`,
+                `C ${x + 18} ${y - 8}, ${x + 14} ${y + 18}, ${x} ${y + 23}`,
+                `C ${x - 14} ${y + 18}, ${x - 18} ${y - 8}, ${x} ${y - 24}`,
+                "Z"
+            ].join(" "),
+            transform: `rotate(${angle} ${x} ${y})`
+        }));
+    }
+
+    if (type === "dot") {
+        motif = createSvgElement("circle", styleAttributes({
+            cx: x,
+            cy: y,
+            r: 4
+        }));
+    }
+
+    if (type === "line-sprout") {
+        motif = motifGroup([
+            createSvgElement("path", styleAttributes({
+                d: `M ${x - 10} ${y + 13} V ${y - 8} M ${x} ${y + 13} V ${y - 18} M ${x + 10} ${y + 13} V ${y - 4}`,
+                "stroke-linecap": "round"
+            }, false)),
+            createSvgElement("circle", styleAttributes({ cx: x - 10, cy: y - 8, r: 3 })),
+            createSvgElement("circle", styleAttributes({ cx: x, cy: y - 18, r: 3 })),
+            createSvgElement("circle", styleAttributes({ cx: x + 10, cy: y - 4, r: 3 }))
+        ]);
+        motif.setAttribute("transform", tangentRotation(angle, x, y));
+    }
+
+    if (type === "dot-line") {
+        motif = motifGroup([
+            createSvgElement("path", styleAttributes({
+                d: `M ${x - 20} ${y + 3} Q ${x} ${y - 8} ${x + 20} ${y + 3}`,
+                "stroke-linecap": "round"
+            }, false)),
+            createSvgElement("circle", styleAttributes({ cx: x - 12, cy: y, r: 3 })),
+            createSvgElement("circle", styleAttributes({ cx: x, cy: y - 4, r: 3 })),
+            createSvgElement("circle", styleAttributes({ cx: x + 12, cy: y, r: 3 }))
+        ]);
+        motif.setAttribute("transform", tangentRotation(angle, x, y));
+    }
+
+    if (type === "star") {
+        motif = createSvgElement("polygon", styleAttributes({
+            points: starPoints(x, y, 16, 7),
+            transform: `rotate(${angle + 90} ${x} ${y})`
+        }));
+    }
+
+    if (type === "arch") {
+        motif = createSvgElement("path", styleAttributes({
+            d: `M ${x - 18} ${y + 14} Q ${x} ${y - 24} ${x + 18} ${y + 14}`,
+            transform: `rotate(${angle} ${x} ${y})`
+        }, false));
+    }
+
+    if (type === "small-arch") {
+        motif = createSvgElement("path", styleAttributes({
+            d: `M ${x - 24} ${y + 12} C ${x - 22} ${y - 6}, ${x - 10} ${y - 6}, ${x - 8} ${y + 12} C ${x - 6} ${y - 7}, ${x + 6} ${y - 7}, ${x + 8} ${y + 12} C ${x + 10} ${y - 6}, ${x + 22} ${y - 6}, ${x + 24} ${y + 12}`,
+            "stroke-linecap": "round",
+            transform: tangentRotation(angle, x, y)
+        }, false));
+    }
+
+    if (type === "spike") {
+        motif = createSvgElement("path", styleAttributes({
+            d: `M ${x - 14} ${y + 16} L ${x} ${y - 22} L ${x + 14} ${y + 16}`,
+            transform: `rotate(${angle} ${x} ${y})`
+        }, false));
+    }
+
+    if (type === "wave") {
+        motif = createSvgElement("path", styleAttributes({
+            d: `M ${x - 24} ${y + 4} C ${x - 17} ${y - 9}, ${x - 10} ${y - 9}, ${x - 4} ${y + 4} C ${x + 2} ${y + 17}, ${x + 11} ${y + 17}, ${x + 18} ${y + 4} C ${x + 21} ${y - 2}, ${x + 23} ${y - 4}, ${x + 24} ${y - 4}`,
+            "stroke-linecap": "round",
+            transform: tangentRotation(angle, x, y)
+        }, false));
+    }
+
+    if (type === "arc-band") {
+        motif = motifGroup([
+            createSvgElement("path", styleAttributes({
+                d: `M ${x - 20} ${y + 17} Q ${x} ${y - 25} ${x + 20} ${y + 17}`,
+                transform: tangentRotation(angle, x, y)
+            }, false)),
+            createSvgElement("path", styleAttributes({
+                d: `M ${x - 11} ${y + 17} Q ${x} ${y - 4} ${x + 11} ${y + 17}`,
+                transform: tangentRotation(angle, x, y)
+            }, false))
+        ]);
+    }
+
+    if (type === "teardrop") {
+        motif = createSvgElement("path", styleAttributes({
+            d: [
+                `M ${x} ${y - 22}`,
+                `C ${x + 18} ${y - 4}, ${x + 12} ${y + 20}, ${x} ${y + 20}`,
+                `C ${x - 12} ${y + 20}, ${x - 18} ${y - 4}, ${x} ${y - 22}`,
+                "Z"
+            ].join(" "),
+            transform: `rotate(${angle + 90} ${x} ${y})`
+        }));
+    }
+
+    if (type === "swirl") {
+        motif = createSvgElement("path", styleAttributes({
+            d: [
+                `M ${x - 14} ${y}`,
+                `C ${x - 14} ${y - 12}, ${x + 14} ${y - 12}, ${x + 14} ${y}`,
+                `C ${x + 14} ${y + 10}, ${x - 4} ${y + 10}, ${x - 4} ${y}`,
+                `C ${x - 4} ${y - 5}, ${x + 5} ${y - 5}, ${x + 5} ${y}`
+            ].join(" "),
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round",
+            transform: tangentRotation(angle, x, y)
+        }, false));
+    }
+
+    if (type === "spiral") {
+        motif = createSvgElement("path", styleAttributes({
+            d: [
+                `M ${x - 22} ${y + 8}`,
+                `C ${x - 14} ${y - 14}, ${x + 17} ${y - 15}, ${x + 20} ${y + 5}`,
+                `C ${x + 23} ${y + 22}, ${x - 3} ${y + 24}, ${x - 5} ${y + 7}`,
+                `C ${x - 7} ${y - 4}, ${x + 8} ${y - 6}, ${x + 9} ${y + 3}`
+            ].join(" "),
+            "stroke-linecap": "round",
+            transform: tangentRotation(angle, x, y)
+        }, false));
+    }
+
+    if (type === "cluster") {
+        motif = motifGroup([
+            createSvgElement("circle", styleAttributes({ cx: x - 9, cy: y + 7, r: 7 })),
+            createSvgElement("circle", styleAttributes({ cx: x + 9, cy: y + 7, r: 7 })),
+            createSvgElement("circle", styleAttributes({ cx: x, cy: y - 10, r: 7 }))
+        ]);
+        motif.setAttribute("transform", tangentRotation(angle, x, y));
+    }
+
+    if (type === "bead-link") {
+        motif = motifGroup([
+            createSvgElement("path", styleAttributes({ d: `M ${x - 18} ${y} H ${x + 18}` }, false)),
+            createSvgElement("circle", styleAttributes({ cx: x - 16, cy: y, r: 7 })),
+            createSvgElement("circle", styleAttributes({ cx: x + 16, cy: y, r: 7 }))
+        ]);
+        motif.setAttribute("transform", tangentRotation(angle, x, y));
+    }
+
+    if (type === "chevron") {
+        motif = createSvgElement("path", styleAttributes({
+            d: `M ${x - 17} ${y - 9} L ${x} ${y + 11} L ${x + 17} ${y - 9}`,
+            transform: tangentRotation(angle, x, y)
+        }, false));
+    }
+
+    if (type === "hatch-triangle") {
+        motif = motifGroup([
+            createSvgElement("polygon", styleAttributes({
+                points: polygonPoints([[x, y - 20], [x + 18, y + 16], [x - 18, y + 16]])
+            })),
+            createSvgElement("path", styleAttributes({
+                d: `M ${x - 7} ${y + 16} L ${x + 7} ${y - 6} M ${x + 3} ${y + 16} L ${x + 13} ${y + 2}`
+            }, false))
+        ]);
+        motif.setAttribute("transform", tangentRotation(angle, x, y));
+    }
+
+    if (type === "stripe-block") {
+        motif = motifGroup([
+            createSvgElement("rect", styleAttributes({
+                x: x - 15,
+                y: y - 15,
+                width: 30,
+                height: 30
+            })),
+            createSvgElement("path", styleAttributes({
+                d: `M ${x - 5} ${y - 15} V ${y + 15} M ${x + 5} ${y - 15} V ${y + 15}`
+            }, false))
+        ]);
+        motif.setAttribute("transform", tangentRotation(angle, x, y));
+    }
+
+    if (type === "crescent") {
+        motif = createSvgElement("path", styleAttributes({
+            d: [
+                `M ${x + 11} ${y - 20}`,
+                `C ${x - 11} ${y - 14}, ${x - 13} ${y + 15}, ${x + 10} ${y + 20}`,
+                `C ${x - 8} ${y + 22}, ${x - 22} ${y + 11}, ${x - 22} ${y}`,
+                `C ${x - 22} ${y - 13}, ${x - 8} ${y - 23}, ${x + 11} ${y - 20}`,
+                "Z"
+            ].join(" "),
+            transform: `rotate(${angle} ${x} ${y})`
+        }));
+    }
+
+    if (type === "eye") {
+        motif = motifGroup([
+            createSvgElement("path", styleAttributes({
+                d: `M ${x - 21} ${y} Q ${x} ${y - 17} ${x + 21} ${y} Q ${x} ${y + 17} ${x - 21} ${y} Z`
+            })),
+            createSvgElement("circle", styleAttributes({ cx: x, cy: y, r: 4 }))
+        ]);
+        motif.setAttribute("transform", `rotate(${angle} ${x} ${y})`);
+    }
+
+    if (type === "ring-dot") {
+        motif = motifGroup([
+            createSvgElement("circle", styleAttributes({ cx: x, cy: y, r: 13 })),
+            createSvgElement("circle", styleAttributes({ cx: x, cy: y, r: 4 }))
+        ]);
+    }
+
+    if (type === "sunburst") {
+        motif = motifGroup([
+            createSvgElement("circle", styleAttributes({ cx: x, cy: y, r: 5 })),
+            createSvgElement("path", styleAttributes({
+                d: `M ${x} ${y - 22} V ${y - 12} M ${x} ${y + 12} V ${y + 22} M ${x - 22} ${y} H ${x - 12} M ${x + 12} ${y} H ${x + 22} M ${x - 15} ${y - 15} L ${x - 8} ${y - 8} M ${x + 8} ${y + 8} L ${x + 15} ${y + 15} M ${x + 15} ${y - 15} L ${x + 8} ${y - 8} M ${x - 8} ${y + 8} L ${x - 15} ${y + 15}`,
+                "stroke-linecap": "round"
+            }, false))
+        ]);
+        motif.setAttribute("transform", `rotate(${angle} ${x} ${y})`);
+    }
+
+    return motif;
+}
+
+function addRing(type) {
+    const previousRadius = currentRadius;
+    const nextRadius = currentRadius + 40;
+    const motifCount = getMotifCount(currentRadius, type);
+    const group = createSvgElement("g", {
+        "data-action": type
+    });
+
+    for (let i = 0; i < motifCount; i++) {
+        const angle = (360 / motifCount) * i;
+        const rad = angle * Math.PI / 180;
+        const x = CENTER_X + currentRadius * Math.cos(rad);
+        const y = CENTER_Y + currentRadius * Math.sin(rad);
+        const motif = drawMotif(type, x, y, angle);
+
+        if (motif) {
+            group.appendChild(motif);
+        }
+    }
+
+    svg.appendChild(group);
+    recordAction({
+        type,
+        element: group,
+        previousRadius,
+        nextRadius
+    });
+
+    currentRadius = nextRadius;
+}
+
+function addCenterDot() {
+    const group = createSvgElement("g", {
+        "data-action": "center-dot"
+    });
+    const outerDot = createSvgElement("circle", styleAttributes({
+        cx: CENTER_X,
+        cy: CENTER_Y,
+        r: 12
+    }));
+
+    const innerDot = createSvgElement("circle", styleAttributes({
+        cx: CENTER_X,
+        cy: CENTER_Y,
+        r: 5
+    }));
+
+    group.appendChild(outerDot);
+    group.appendChild(innerDot);
+    svg.appendChild(group);
+    recordAction({
+        type: "center-dot",
+        element: group,
+        previousRadius: currentRadius,
+        nextRadius: currentRadius
+    });
+}
+
+function addBoundary() {
+    const previousRadius = currentRadius;
+    const radius = Math.min(currentRadius, 380);
+    const nextRadius = Math.min(radius + 30, 390);
+    const group = createSvgElement("g", {
+        "data-action": "boundary"
+    });
+    const boundary = createSvgElement("circle", styleAttributes({
+        cx: CENTER_X,
+        cy: CENTER_Y,
+        r: radius,
+        "stroke-width": 3
+    }));
+
+    group.appendChild(boundary);
+    svg.appendChild(group);
+    recordAction({
+        type: "boundary",
+        element: group,
+        previousRadius,
+        nextRadius
+    });
+
+    currentRadius = nextRadius;
+}
+
+function addDoubleBoundary() {
+    const previousRadius = currentRadius;
+    const radius = Math.min(currentRadius, 380);
+    const nextRadius = Math.min(radius + 30, 390);
+    const group = createSvgElement("g", {
+        "data-action": "double-boundary"
+    });
+    const outerBoundary = createSvgElement("circle", styleAttributes({
+        cx: CENTER_X,
+        cy: CENTER_Y,
+        r: radius,
+        "stroke-width": 3
+    }));
+    const innerBoundary = createSvgElement("circle", styleAttributes({
+        cx: CENTER_X,
+        cy: CENTER_Y,
+        r: Math.max(radius - 12, 1),
+        "stroke-width": 3
+    }));
+
+    group.appendChild(outerBoundary);
+    group.appendChild(innerBoundary);
+    svg.appendChild(group);
+    recordAction({
+        type: "double-boundary",
+        element: group,
+        previousRadius,
+        nextRadius
+    });
+
+    currentRadius = nextRadius;
+}
+
+function eraseLast() {
+    eraserMode = !eraserMode;
+    invertElementMode = false;
+    updateEraserMode();
+    updateInvertElementMode();
+}
+
+function toggleReverse() {
+    removeActionAt(actionHistory.length - 1);
+}
+
+function toggleInverse() {
+    const action = removedActions.pop();
+
+    if (!action) {
+        return;
+    }
+
+    svg.appendChild(action.element);
+    actionHistory.push(action);
+
+    if (action.removedFromEnd) {
+        currentRadius = action.nextRadius;
+    }
+}
+
+function toggleInvertElement() {
+    invertElementMode = !invertElementMode;
+    eraserMode = false;
+    updateInvertElementMode();
+    updateEraserMode();
+}
+
+function resetCanvas() {
+    actionHistory.forEach(action => action.element.remove());
+    removedActions.length = 0;
+    actionHistory.length = 0;
+    currentRadius = 50;
+    eraserMode = false;
+    invertElementMode = false;
+    updateEraserMode();
+    updateInvertElementMode();
+}
+
+function downloadArtwork() {
+    const clone = svg.cloneNode(true);
+    clone.setAttribute("xmlns", SVG_NS);
+
+    const svgData = new XMLSerializer().serializeToString(clone);
+    const svgBlob = new Blob([svgData], {
+        type: "image/svg+xml;charset=utf-8"
+    });
+    const svgUrl = URL.createObjectURL(svgBlob);
+    const image = new Image();
+
+    image.onload = () => {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+
+        canvas.width = 800;
+        canvas.height = 800;
+        context.fillStyle = backgroundPicker.value;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0);
+
+        canvas.toBlob(blob => {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+
+            link.href = url;
+            link.download = "mandala-artwork.jpg";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+            URL.revokeObjectURL(svgUrl);
+        }, "image/jpeg", 0.95);
+    };
+
+    image.src = svgUrl;
+}
+
+function downloadSvgArtwork() {
+    const clone = svg.cloneNode(true);
+    clone.setAttribute("xmlns", SVG_NS);
+
+    const svgData = new XMLSerializer().serializeToString(clone);
+    const blob = new Blob([svgData], {
+        type: "image/svg+xml;charset=utf-8"
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "mandala-artwork.svg";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+}
+
+svg.addEventListener("click", event => {
+    if (!eraserMode && !invertElementMode) {
+        return;
+    }
+
+    const actionGroup = getActionGroup(event.target);
+
+    if (!actionGroup) {
+        return;
+    }
+
+    if (eraserMode) {
+        const index = findActionIndexByElement(actionGroup);
+        removeActionAt(index);
+        return;
+    }
+
+    invertElementColors(actionGroup);
+});
+
+</script>
+
+</body>
+</html>
